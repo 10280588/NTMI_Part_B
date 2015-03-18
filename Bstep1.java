@@ -44,13 +44,14 @@ public class Bstep1 {
         // actual steps of the program
         list = reader(input);
         TreeConverter converter = new TreeConverter();
-        list = converter.convert(list);
-        saver(list, output);
+        String convertedString = converter.convert(list);
+        saver(convertedString, output);
         System.out.println("Program is done running.");
 
     }
 
-    public static ArrayList<String> reader(String file){
+    @SuppressWarnings("resource")
+	public static ArrayList<String> reader(String file){
 
         System.out.println("Reading the input file");
         System.out.println(file);
@@ -80,14 +81,12 @@ public class Bstep1 {
 
     }
 
-    public static void saver(ArrayList<String> input, String file){
+    public static void saver(String input, String file){
 
         System.out.printf("Saving the results to: %s \n", file);
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(file));
-            for (String sentence : input) {
-                pw.write(sentence + "\n");
-            }
+                pw.write(input + "\n");
 
             pw.close();
         }
