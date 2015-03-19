@@ -7,34 +7,51 @@ import java.util.*;
 
 public class TreeConverter{
 
-    private static HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+    private static HashMap<Integer, Integer> lengthMap = new HashMap<Integer, Integer>();
+    private static HashMap<Integer, ArrayList<Integer>> ancestorMap = new HashMap<Integer, ArrayList<Integer>>();
+    private static HashMap<Integer, ArrayList<Integer>> siblingMap = new HashMap<Integer, ArrayList<Integer>>();
+    
     public String convert(ArrayList<String> input){
         String[] splitList = new String[0];
 
         String convertedString = "";
         System.out.println("Starting converting the file");
-        int key = 0;
-        int value = 0;
-
+     
         for(String sentence : input){
             if(!sentence.isEmpty()){
                 System.out.println("Original sentence: " + sentence);
                 splitList = sentence.split(" ");
                 for (int i=0;i<splitList.length;i++) {
-                    key = i;
-                    value = branchLength(splitList, i);
-                    map.put(i, value);
+                    lengthMap.put(i, findLength(splitList, i));
+                }
+                System.out.println("The length of all items:");
+                System.out.println(lengthMap.values());
+                for (int i=0;i<splitList.length;i++) {
+                    siblingMap.put(i, findSibling(splitList, i)); 
                 }
                 System.out.println(Arrays.toString(splitList));
-                System.out.println("Done converting the file");
-                mapper(splitList);
+                System.out.println();
+                lengthMap.clear();
+                siblingMap.clear();
             }
         }
 
         return convertedString;
     }
-
-    public static int branchLength(String[] sentence, int where){
+    
+    public static ArrayList<Integer> findSibling(String[] sentence, int where){
+        ArrayList<Integer> siblingList = new ArrayList<Integer>();
+        for (int i=where;i< where+lengthMap.get(where);i++){
+           if( lengthMap.get(i) > 1 && i > 1 ){
+               if (sentence[i-1].contains("(")) {
+               System.out.printf("Found oldestchild at: %d \n", i);
+               siblingList.add(1);
+            }
+           }
+        }
+        return siblingList;
+    }
+    public static int findLength(String[] sentence, int where){
         int openCounter = 0;
         int numbOfClose;
         int branchLength = 0;
@@ -53,7 +70,8 @@ public class TreeConverter{
         }
         return 0;
     }
-
+}
+/*
     public static int mapper(String[] sentence){
         int value = 0;
         System.out.println("mapping");
@@ -90,164 +108,6 @@ public class TreeConverter{
         System.out.printf("Secondo needs a tag: %d \n", secondChild);
 
         return secondChild;
-    }
-}
-
-
-/*try to make recursive
-public static String getTags(String[] sentence,  String[] edit, int where) {
-
-int sentenceLength = branchLength(sentence, where);
-System.out.println(sentenceLength);
-System.out.println("Recurse it baby!");
-if( sentenceLength < 2 ){
-return "b";
-}
-else{
-System.out.println(Arrays.toString(sentence));
-String s = "";
-where = where + 1;
-System.out.println(where);
-getTags(sentence, edit, where);
-}
-return "";
-}
-*/
-
-    /*
-
-    public static ArrayList<ArrayList<String>> addTagsToBranch(ArrayList<ArrayList<String>> branch) {
-    	ArrayList<ArrayList<String>> newBranch = new ArrayList<ArrayList<String>>();
-    	String currentEditedPart = "(@";
-    	String tagPart;
-
-    	if(branch.size() < 2) {
-    		return branch;
-    	} else {
-    		ArrayList<String> subBranch = new ArrayList<String>();
-    		newBranch.add(branch.get(0));
-    		newBranch.add(branch.get(1));
-    		tagPart = branch.get(0).get(0);
-    		tagPart = tagPart.replace("(", "");
-    		currentEditedPart += tagPart + "->";
-    		int bracketsToAdd = branch.size() - 2;
-    		for(int i = 2; i < branch.size(); i++) {
-    			tagPart = "_" + branch.get(i-1).get(0);
-    			tagPart = tagPart.replace("(", "");
-    			currentEditedPart += tagPart;
-    			subBranch.add(currentEditedPart);
-    			newBranch.add(subBranch);
-    			if(i == branch.size()-1) {
-    				String bracketString = "";
-    				for(int j = 0; j < bracketsToAdd; j++) {
-    					bracketString += ")";
-    				}
-    				branch.get(i).set(branch.get(i).size()-1, branch.get(i).get(branch.get(i).size()-1) + bracketString);
-    				newBranch.add(branch.get(i));
-    			} else {
-    				newBranch.add(branch.get(i));
-    			}
-    			subBranch = new ArrayList<String>();
-    		}
-    	}
-    	return newBranch;
-    }
-
-    public static String getTags(String[] sentence) {
-    	ArrayList<ArrayList<String>> currentBranch = null;
-    	ArrayList<ArrayList<String>> branches = getBranches(sentence);
-    	ArrayList<ArrayList<ArrayList<String>>> taggedBranchList = new ArrayList<ArrayList<ArrayList<String>>>(); //2crazy
-    	ArrayList<ArrayList<String>> lastBranch = null;
-    	for(int i = 0; i < 100; i++) {
-			if(hasMoreTags(branches)) {
-				for(ArrayList<String> subBranch : branches) {
-					currentBranch = addTagsToBranch(branches);
-					if(currentBranch.size() > 1) {
-						System.out.println(currentBranch);
-						taggedBranchList.add(currentBranch);
-					}
-					String[] subBranchSentence = subBranchToStringArray(subBranch);
-					ArrayList<ArrayList<String>> subbranches = getBranches(subBranchSentence);
-					branches = subbranches;
-					lastBranch = branches;
-				}
-	    	} else {
-	    		System.out.println("breaking");
-	    		break;
-	    	}
-    	}
-		if(lastBranch.size() > 1) {
-			System.out.println(lastBranch);
-			taggedBranchList.add(lastBranch);
-		}
-
-		StringBuilder sb = new StringBuilder();
-        for(String str : branchToStringArray(currentBranch)) sb.append(str + " ");
-        return sb.toString();
-    }
-
-
-
-    public static boolean hasMoreTags(ArrayList<ArrayList<String>> branch) {
-    	boolean tags = false;
-    	if(branch.size() > 2) {
-    		tags = true;
-    	} else {
-    		for(ArrayList<String> subBranch : branch) {
-    			if(subBranch.size() > 2) {
-    				tags = true;
-    			}
-    		}
-    	}
-    	return tags;
-    }
-
-    public static String[] branchToStringArray(ArrayList<ArrayList<String>> branch) {
-    	String branchPart = "";
-        for(int j = 0; j < branch.size(); j++) {
-			 for(int k = 0; k < branch.get(j).size(); k++) {
-				 branchPart += branch.get(j).get(k) + " ";
-			 }
-        }
-        return branchPart.split(" ");
-    }
-
-    public static String[] subBranchToStringArray(ArrayList<String> subBranch) {
-    	String branchPart = "";
-        for(int j = 0; j < subBranch.size(); j++) {
-				 branchPart += subBranch.get(j) + " ";
-        }
-        return branchPart.split(" ");
-    }
-
-    public static ArrayList<ArrayList<String>> getBranches(String[] sentence) {
-        int openCounter = 0;
-        ArrayList<String> subBranch = new ArrayList<String>();
-        subBranch.add(sentence[0]);
-        int numbOfClose;
-        ArrayList<ArrayList<String>> branch = new ArrayList<ArrayList<String>>();
-
-        branch.add(subBranch);
-        subBranch = new ArrayList<String>();
-        for(int i = 1; i < sentence.length; i++) {
-        	if (sentence[i].contains("(")) {
-                openCounter++;
-                subBranch.add(sentence[i]);
-            } else if (sentence[i].contains(")")) {
-            	numbOfClose = sentence[i].length() - sentence[i].replace(")", "").length();
-            	openCounter-=numbOfClose;
-            	subBranch.add(sentence[i]);
-            	if (openCounter < 0) {
-                    branch.add(subBranch);
-                    subBranch = new ArrayList<String>();
-                    break;
-                } else if (openCounter == 0) {
-                    branch.add(subBranch);
-                    subBranch = new ArrayList<String>();
-                }
-            }
-        }
-        return branch;
     }
 }
 

@@ -9,7 +9,6 @@ import java.util.*;
 
 public class Bstep1 {
 
-
     /**
     * @param args the command line arguments
     */
