@@ -1,1 +1,3 @@
+(ROOT (S^ROOT (NP^ROOT^S (NNP^ROOT^S^NP (Ms. (@NNP^ROOT^S^NP->NNP (Haag (@VP^ROOT^S->NP (VBZ^ROOT^S^VP (plays (@NP^ROOT^S^VP->VBZ (NNP^ROOT^S^VP^NP (Elianti (@.^ROOT^S->NP_VP (. 
 
+(NP (NNP^NP (Rolls-Royce^NP^NNP (NNP^NP^NNP^Rolls-Royce (Motor (@NNPS^NP^NNP^Rolls-Royce->NNP (Cars (@NNP^NP^NNP->Rolls-Royce (Inc.^NP^NNP^NNP 

@@ -11,32 +11,32 @@ public class TreeConverter{
     private static HashMap<Integer, ArrayList<Integer>> ancestorMap = new HashMap<Integer, ArrayList<Integer>>();
     private static HashMap<Integer, ArrayList<Integer>> siblingMap = new HashMap<Integer, ArrayList<Integer>>();
     
-    public String convert(ArrayList<String> input){
+    public ArrayList<String> convert(ArrayList<String> input){
         String[] splitList = new String[0];
-
+        ArrayList<String> convertedStringArray =  new ArrayList<String>();
         String convertedString = "";
         System.out.println("Starting converting the file");
      
         for(String sentence : input){
             if(!sentence.isEmpty()){
+                System.out.println();
                 System.out.println("Original sentence: " + sentence);
                 splitList = sentence.split(" ");
                 for (int i=0;i<splitList.length;i++) {
                     lengthMap.put(i, findLength(splitList, i));
                 }
-                System.out.println("The length of all items:");
-                System.out.println(lengthMap.values());
-                for (int i=0;i<splitList.length;i++) {
-                    siblingMap.put(i, findSibling(splitList, i)); 
-                }
-                System.out.println(Arrays.toString(splitList));
-                System.out.println();
+                convertedString = annotateSentence(splitList, 2, 2);
+                System.out.println("Annotated sentence: " + convertedString);
+                convertedStringArray.add(convertedString);
                 lengthMap.clear();
                 siblingMap.clear();
             }
+            else {
+                convertedStringArray.add("");
+            }
         }
-
-        return convertedString;
+        System.out.println();
+        return convertedStringArray;
     }
     
     public static ArrayList<Integer> findSibling(String[] sentence, int where){
@@ -44,7 +44,6 @@ public class TreeConverter{
         for (int i=where;i< where+lengthMap.get(where);i++){
            if( lengthMap.get(i) > 1 && i > 1 ){
                if (sentence[i-1].contains("(")) {
-               System.out.printf("Found oldestchild at: %d \n", i);
                siblingList.add(1);
             }
            }
@@ -69,6 +68,124 @@ public class TreeConverter{
             }
         }
         return 0;
+    }
+    
+    public static String annotateSentence(String[] splitList, int hOrder, int vOrder) {
+        HashMap<Integer, ArrayList<Integer>> ancestorMap = new HashMap<Integer, ArrayList<Integer>>();
+        ArrayList<Integer> tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        ancestorMap.put(1, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        ancestorMap.put(2, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        tmpArrayList.add(2);
+        ancestorMap.put(3, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        tmpArrayList.add(2);
+        ancestorMap.put(5, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        ancestorMap.put(7, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        tmpArrayList.add(7);
+        ancestorMap.put(8, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        tmpArrayList.add(7);
+        ancestorMap.put(10, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        tmpArrayList.add(7);
+        tmpArrayList.add(10);
+        ancestorMap.put(11, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(0);
+        tmpArrayList.add(1);
+        ancestorMap.put(13, tmpArrayList);
+        
+        HashMap<Integer, ArrayList<Integer>> siblingMap = new HashMap<Integer, ArrayList<Integer>>();
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(3);
+        siblingMap.put(5, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(2);
+        siblingMap.put(7, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(8);
+        siblingMap.put(10, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        tmpArrayList.add(2);
+        tmpArrayList.add(7);
+        siblingMap.put(13, tmpArrayList);
+        tmpArrayList = new ArrayList<Integer>();
+        
+        ArrayList<String> newSentenceArray = new ArrayList<String>();
+        String currentSentencePart = "";
+        String tagPart = "";
+        for(int i = 0; i < splitList.length; i++) {
+            currentSentencePart += "(";   
+            if(siblingMap.get(i) != null) { 
+                currentSentencePart += "@";   
+            }
+            tagPart = splitList[i].replaceAll("[()]", "");
+            currentSentencePart += tagPart;
+            if(ancestorMap.get(i) != null) {
+                currentSentencePart += "^";
+                for(int ancestor :  ancestorMap.get(i)) {
+                    currentSentencePart += splitList[ancestor].replaceAll("[()]", "");
+                    if(ancestorMap.get(i).size() > 1) {
+                        currentSentencePart += "^";
+                    }
+                }
+                if (currentSentencePart.length() > 0 && currentSentencePart.charAt(currentSentencePart.length()-1)=='^') {
+                    currentSentencePart = currentSentencePart.substring(0, currentSentencePart.length()-1);
+                }
+            }
+            if(siblingMap.get(i) != null) {
+                currentSentencePart += "->";
+                for(int sibling : siblingMap.get(i)) {
+                    currentSentencePart += splitList[sibling].replaceAll("[()]", "");
+                    if(ancestorMap.get(i).size() > 1) {
+                        currentSentencePart += "_";
+                    }
+                }
+                if (currentSentencePart.length() > 0 && currentSentencePart.charAt(currentSentencePart.length()-1)=='_') {
+                    currentSentencePart = currentSentencePart.substring(0, currentSentencePart.length()-1);
+                }
+                int closingBracketInt = ancestorMap.get(i).get(ancestorMap.get(i).size()-1);
+            }
+            newSentenceArray.add(currentSentencePart);
+            currentSentencePart = "";
+        }
+        
+        for(int i = 0; i < newSentenceArray.size(); i++) {
+            if(lengthMap.get(i) == 1) { 
+                String bracketString = splitList[i];
+                if(siblingMap.get(i) != null) {
+                    for(int j = 0; j < siblingMap.get(i).size(); j++) {
+                        bracketString += ')';
+                    }
+                    newSentenceArray.set(i, bracketString);
+                }
+            }
+        }
+        String newSentence = "";
+
+        for (String s : newSentenceArray) {
+            newSentence += s + " ";
+        }
+        return newSentence;
     }
 }
 /*

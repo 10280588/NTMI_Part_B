@@ -43,49 +43,40 @@ public class Bstep1 {
         // actual steps of the program
         list = reader(input);
         TreeConverter converter = new TreeConverter();
-        String convertedString = converter.convert(list);
-        saver(convertedString, output);
+        ArrayList<String> convertedStringArray = converter.convert(list);
+        saver(convertedStringArray, output);
         System.out.println("Program is done running.");
-
     }
 
     @SuppressWarnings("resource")
 	public static ArrayList<String> reader(String file){
 
-        System.out.println("Reading the input file");
-        System.out.println(file);
+        System.out.println("Reading the input file: " + file);
         ArrayList<String> list = new ArrayList<String>();
-
 
         BufferedReader br = null;
         try {
-
             String sCurrentLine;
-
             br = new BufferedReader(new FileReader(file));
 
             while ((sCurrentLine = br.readLine()) != null) {
                 list.add(sCurrentLine);
-                System.out.println(sCurrentLine);
             }
-
-            System.out.println(list);
 
         } catch (IOException e) {
             e.printStackTrace();
-
         }
-
         return list;
-
     }
 
-    public static void saver(String input, String file){
+    public static void saver(ArrayList<String> input, String file){
 
         System.out.printf("Saving the results to: %s \n", file);
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(file));
-                pw.write(input + "\n");
+            for(String sentence : input) {
+                pw.write(sentence + "\n");
+            }    
 
             pw.close();
         }
